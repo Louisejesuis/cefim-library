@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.louiseroy.library.author.model.Author;
 import fr.louiseroy.library.book.model.Book;
 import fr.louiseroy.library.genre.model.Genre;
+import fr.louiseroy.library.rating.model.BookRating;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +18,14 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class BookTests {
 
     private Book lePetitPrince;
@@ -102,5 +106,31 @@ public class BookTests {
 
         Book newBook = objectMapper.readValue(contentAsString, Book.class);
         assert newBook.equals(book);
+    }
+
+    @Test
+    void getBookRate() throws Exception {
+
+        RequestBuilder request = MockMvcRequestBuilders.get("/api/book/1/rate");
+        ResultMatcher resultStatus = MockMvcResultMatchers.status().isOk();
+        String contentAsString = mockMvc.perform(request)
+                .andExpect(resultStatus)
+                .andReturn().getResponse().getContentAsString();
+
+        BookRating bookRating = objectMapper.readValue(contentAsString, BookRating.class);
+        assert bookRating.getRate().equals(new BigDecimal("8.5000"));
+    }
+
+    @Test
+    void getHighestBookRate() throws Exception {
+
+        RequestBuilder request = MockMvcRequestBuilders.get("/api/book/rate/highest");
+        ResultMatcher resultStatus = MockMvcResultMatchers.status().isOk();
+        String contentAsString = mockMvc.perform(request)
+                .andExpect(resultStatus)
+                .andReturn().getResponse().getContentAsString();
+        Book book = objectMapper.readValue(contentAsString, Book.class);
+
+        assert book.getTitle().equals("Anges et Demons");
     }
 }

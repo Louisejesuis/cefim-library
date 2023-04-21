@@ -27,4 +27,9 @@ public class AuthorController {
     public List<Author> getAuthorByLastName(@RequestParam String lastname) {
         return authorService.findAuthorByLastname(lastname);
     }
+
+    @GetMapping("/{id}/books")
+    public AuthorWithBooks getAuthorWithBooks(@PathVariable("id") Integer id) {
+        return authorService.getAuthorWithBooks(id);
+    }
 }
